@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+from turterra.app_layout import get_layout
+from turterra.app_callbacks import register_callbacks
+from pathlib import Path
+from dash_extensions.enrich import (
+    DashProxy,
+    TriggerTransform,
+    MultiplexerTransform,
+    ServersideOutputTransform,
+)
+import typer
+
+STATIC = Path("static")
+if not STATIC.exists():
+    STATIC.mkdir()
+
+external_stylesheets = [
+    "https://unpkg.com/purecss@1.0.1/build/base-min.css",
+    "https://unpkg.com/purecss@2.0.6/build/pure-min.css",
+    "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css",
+    "https://fonts.googleapis.com/css?family=Fira+Code:wght@500|Fira+Sans+Condensed|Cantarell|VT323&display=swap",
+]
+
+
+def run(
+    host: str = typer.Argument("0.0.0.0", help="host IP to serve the app"),
+    port: int = typer.Argument(8888, help="port"),
+):
+    app = DashProxy(
+        __name__,
+        transforms=[
+            TriggerTransform(),  # enable use of Trigger objects
+            MultiplexerTransform(),  # makes it possible to target an output multiple times in callbacks
+            ServersideOutputTransform(),
+        ],
+        external_stylesheets=external_stylesheets,
+        assets_url_path="bin/assets",
+        url_base_pathname="/",
+        prevent_initial_callbacks=True,
+    )
+    app.config.suppress_callback_exceptions = True
+    app.layout = get_layout()
+    register_callbacks(app)
+    app.run_server(host=host, port=port, debug=True)
+
+
+if __name__ == "__main__":
+    typer.run(run)

@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+import inspect
+import os
+from shutil import copyfile
+import subprocess
+
+import prody as pd
+import typer
+
+
+import turterra.dependencies.modeller.homology_modelling as homology_modelling
+import turterra.dependencies.modeller.parallel_modelling
+from turterra.dependencies.modeller.make_modeller_files import make_modeller_files
+from turterra.dependencies.modeller.move_best_models import copy_best_models
+
+
+def make_directory(parent, dir_name):
+    dir = os.path.join(parent, dir_name)
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+
+    return dir
+
+
+def run(fasta: str, template_dir: str, num_threads: int):
+    parallel_modelling_file = inspect.getfile(
+        turterra.dependencies.modeller.parallel_modelling
+    )
+    homology_modelling_file = inspect.getfile(
+        turterra.dependencies.modeller.homology_modelling
+    )
+    print(parallel_modelling_file)
+    print(homology_modelling_file)
+
+    cwd = os.path.abspath(os.getcwd())
+
+    modeller_dir = make_directory(cwd, "turterra_models")
+    data_dir = make_directory(modeller_dir, ".data")
+    running_dir = make_directory(data_dir, "running")
+    alignment_dir = make_directory(data_dir, "alignments")
+    fasta_dir = make_directory(data_dir, "fastas")
+    all_models_dir = make_directory(data_dir, "all_models")
+
+    running_script = os.path.join(running_dir, "parallel_modelling.py")
+
+    copyfile(parallel_modelling_file, running_script)
+    os.chdir(running_dir)
+
+    templates_fasta, key_file = make_modeller_files(
+        fasta, template_dir, alignment_dir, fasta_dir, data_dir
+    )
+
+    command = [
+        "python",
+        running_script,
+        homology_modelling_file,
+        template_dir,
+        templates_fasta,
+        alignment_dir,
+        all_models_dir,
+        key_file,
+        str(num_threads),
+    ]
+
+    subprocess.run(command)
+
+    copy_best_models(all_models_dir, modeller_dir)
+
+
+if __name__ == "__main__":
+    typer.run(run)
