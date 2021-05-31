@@ -24,49 +24,94 @@ def make_directory(parent, dir_name):
     return dir
 
 
-def run(fasta: str, template_dir: str, num_threads: int):
-    parallel_modelling_file = inspect.getfile(
-        turterra.dependencies.modeller.parallel_modelling
-    )
-    homology_modelling_file = inspect.getfile(
-        turterra.dependencies.modeller.homology_modelling
-    )
-    print(parallel_modelling_file)
-    print(homology_modelling_file)
+def run(fasta: str=typer.Option(...),
+        build_models: bool=typer.Option(False, help="Run modeller to construct homology models using MODELLER v10.0."),
+        build_alignment: bool=typer.Option(False, help="Build a multiple sequence alignment using Muscle v3.8."),
+        alignment: str=typer.Option("", help="Multiple sequence alignment. Required if --build_alignment is false."),
+        build_tree: bool=typer.Option(False, help="Build phylogenetic tree using FastTree v2.1.10."),
+        model_templates: str=typer.Option("", help="Directory containing templates for homology modelling in .pdb format. Required if --model is passed."),
+        num_threads: int=typer.Option(1, help="Number of threads used for homology modelling.")):
 
-    cwd = os.path.abspath(os.getcwd())
+    data_dir = os.path.abspath(os.getcwd())
 
-    modeller_dir = make_directory(cwd, "turterra_models")
-    data_dir = make_directory(modeller_dir, ".data")
-    running_dir = make_directory(data_dir, "running")
-    alignment_dir = make_directory(data_dir, "alignments")
-    fasta_dir = make_directory(data_dir, "fastas")
-    all_models_dir = make_directory(data_dir, "all_models")
+    sequences = os.path.join(data_dir, "sequences.fasta")
+    copyfile(fasta, sequences)
 
-    running_script = os.path.join(running_dir, "parallel_modelling.py")
+    if build_alignment:
+        if alignment:
+            print("Not building multiple sequence alignment, as existing alignment was provided.")
+            new_alignment_dir = os.path.join(data_dir, "sequence_alignment.fasta")
+            copyfile(alignment, new_alignment_dir)
+            alignment = new_alignment_dir
 
-    copyfile(parallel_modelling_file, running_script)
-    os.chdir(running_dir)
+        else:
+            alignment = os.path.join(data_dir, "sequence_alignment.fasta")
+            command = [
+                "muscle",
+                "-in",
+                sequences,
+                "-out",
+                alignment,
+                "-quiet"
+            ]
+            subprocess.run(command)
 
-    templates_fasta, key_file = make_modeller_files(
-        fasta, template_dir, alignment_dir, fasta_dir, data_dir
-    )
+    if build_tree:
 
-    command = [
-        "python",
-        running_script,
-        homology_modelling_file,
-        template_dir,
-        templates_fasta,
-        alignment_dir,
-        all_models_dir,
-        key_file,
-        str(num_threads),
-    ]
+        tree_file = open(os.path.join(data_dir, 'tree.txt'), 'w')
 
-    subprocess.run(command)
+        subprocess.run(["fasttree", alignment], stdout=tree_file)
 
-    copy_best_models(all_models_dir, modeller_dir)
+        tree_file.close()
+
+    if build_models:
+        if not model_templates:
+            print("Provide directory containing modelling templates for homology modelling with --model_templates <directory>.")
+            exit()
+        parallel_modelling_file = inspect.getfile(
+            turterra.dependencies.modeller.parallel_modelling
+        )
+        homology_modelling_file = inspect.getfile(
+            turterra.dependencies.modeller.homology_modelling
+        )
+        print(parallel_modelling_file)
+        print(homology_modelling_file)
+
+
+
+        modeller_dir = make_directory(data_dir, "structures")
+        modelling_data_dir = make_directory(data_dir, ".modelling_data")
+        running_dir = make_directory(modelling_data_dir, "running")
+        alignment_dir = make_directory(modelling_data_dir, "alignments")
+        fasta_dir = make_directory(modelling_data_dir, "fastas")
+        all_models_dir = make_directory(modelling_data_dir, "all_models")
+
+        running_script = os.path.join(running_dir, "parallel_modelling.py")
+
+        copyfile(parallel_modelling_file, running_script)
+        os.chdir(running_dir)
+
+        templates_fasta, key_file = make_modeller_files(
+            fasta, model_templates, alignment_dir, fasta_dir, modelling_data_dir
+        )
+
+        command = [
+            "python",
+            running_script,
+            homology_modelling_file,
+            model_templates,
+            templates_fasta,
+            alignment_dir,
+            all_models_dir,
+            key_file,
+            str(num_threads),
+        ]
+
+        subprocess.run(command)
+
+        copy_best_models(all_models_dir, modeller_dir)
+
+
 
 
 if __name__ == "__main__":
