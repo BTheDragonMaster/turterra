@@ -35,9 +35,27 @@ Congratulations! Turterra was installed!
 In order to run turterra with your own data, create a folder called 'data' in the top-level folder called turterra. This folder should contain the following files and folders:
 
 ```
-turterra/
-    |--data/
+turterra
+    |--data
+        |--data.txt
+        |--sequences.fasta
+        |--sequence_alignment.fasta
+        |--smiles.tsv
+        |--structure_alignment.fasta
+        |--structures
+            |--sequence1_model.pdb
+            |--sequence2.pdb
+            |--sequence3_model.pdb
+            |--...
+        |--tree.txt
 ```
+
+| file name | file contents |
+| ------ | ------ |
+| data.txt | tab-separated file, with categories in the first row and data for each sequence in the following rows. Any category can be defined. These are the categories that turterra will later be able to filter your data on. Currently, the categories 'Accession', 'Species' and 'Compounds' should always be present. |
+| sequences.fasta | A .fasta file containing all the sequences in the analysis, with the accessions specified in data.txt as headers. |
+| sequence_alignment.fasta | A .fasta file containing an alignment of all sequences in the analysis, with the accessions specified in data.txt as headers. |
+| smiles.tsv | A tab-separated file, with as header 'Name\tSMILES', and all compounds names in the analysis and their corresponding structures in [SMILES format](http://opensmiles.org/opensmiles.html). |
 
 
 
