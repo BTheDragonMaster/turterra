@@ -32,7 +32,12 @@ Congratulations! Turterra was installed!
 
 ## Turterra folder architecture
 
-In order to run turterra with your own data, create a folder called 'data' in the top-level folder called turterra. This folder should contain the following files:
+In order to run turterra with your own data, create a folder called 'data' in the top-level folder called turterra. This folder should contain the following files and folders:
+
+```
+turterra/
+    |--data/
+```
 
 
 
