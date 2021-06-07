@@ -55,7 +55,7 @@ turterra
 | data.txt | tab-separated file, with categories in the first row and data for each sequence in the following rows. Any category can be defined. These are the categories that turterra will later be able to filter your data on. Currently, the categories 'Accession', 'Species' and 'Compounds' should always be present. |
 | sequences.fasta | A .fasta file containing all the sequences in the analysis, with the accessions specified in data.txt as headers. |
 | sequence_alignment.fasta | A .fasta file containing an alignment of all sequences in the analysis, with the accessions specified in data.txt as headers. |
-| smiles.tsv | A tab-separated file, with as header 'Name\tSMILES', and all compounds names in the analysis and their corresponding structures in [SMILES format](http://opensmiles.org/opensmiles.html). |
+| smiles.tsv | A tab-separated file, with as header 'Name\tSMILES', and in the remaining rows all compound names in the analysis and their corresponding structures in [SMILES format](http://opensmiles.org/opensmiles.html). |
 | structure_alignment.fasta | A .fasta file containing a structure-based sequence alignment of all sequences in the analysis, with the accessions specified in data.txt as headers. We recommend you create this file with [caretta](https://github.com/TurtleTools/caretta) through turterra-build. |
 | structures | Directory containing structural (homology) models for sequences in the analysis in .pdb format. File names should have the format 'accession_model.pdb' for homology-modelled structures, and 'accession.pdb' for crystal structures. Accessions should match the accessions in data.txt. |
 | tree.txt | A phylogenetic tree in newick format. Leaf nodes should be labelled with the accessions specified in data.txt. |
