@@ -60,6 +60,42 @@ turterra
 | structures | Directory containing structural (homology) models for sequences in the analysis in .pdb format. File names should have the format 'accession_model.pdb' for homology-modelled structures, and 'accession.pdb' for crystal structures. Accessions should match the accessions in data.txt. |
 | tree.txt | A phylogenetic tree in newick format. Leaf nodes should be labelled with the accessions specified in data.txt. |
 
+All these files, with the exception of data.txt and smiles.tsv, can be automatically generated with turterra-build from a .fasta file containing the sequences you wish to analyse (use accessions of your choice as header), and a folder containing .pdb structures for homology modelling.
+
+## Running turterra-build
+
+Turterra-build uses [Muscle](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-5-113) (default settings) for sequence alignment, [FastTree](http://www.microbesonline.org/fasttree/) (default settings) for phylogenetic tree construction, [Modeller](https://salilab.org/modeller/) (250 models per sequence) for homology modelling, and Caretta for structure alignment. Turterra-build is run as follows:
+
+```
+Usage: turterra-build [OPTIONS]
+
+Options:
+  --fasta.                        [required] .fasta file containing all sequences
+                                  to analyse, using accessions as headers.
+  --build-models / --no-build-models
+                                  Run modeller to construct homology models
+                                  using MODELLER v10.0.  [default: False]
+
+  --build-alignment / --no-build-alignment
+                                  Build a multiple sequence alignment using
+                                  Muscle v3.8.  [default: False]
+
+  --alignment                     Multiple sequence alignment. Required if
+                                  --build_alignment is false.  [default: '']
+
+  --build-tree / --no-build-tree  Build phylogenetic tree using FastTree
+                                  v2.1.10.  [default: False]
+
+  --model-templates.              Directory containing templates for homology
+                                  modelling in .pdb format. Required if
+                                  --model is passed.  [default: '']
+
+  --num-threads.                  Number of threads used for homology
+                                  modelling.  [default: 1]
+
+  --help                          Show this message and exit.
+```
+
 
 
 
