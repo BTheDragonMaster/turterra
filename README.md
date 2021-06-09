@@ -106,5 +106,8 @@ Once the correct folder architecture has been created, all the hard work is done
 bin/turterra
 ```
 
+## Customizing turterra
+See the [wiki](https://git.wageningenur.nl/durai001/turterra/-/wikis/Guide-for-Developers)
+
 
 
