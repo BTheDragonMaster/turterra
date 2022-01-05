@@ -22,7 +22,7 @@ setup(
         "dash",
         "dash-bio==0.5.*",
         "dash-daq",
-        "dash-bio-utils",
+        "dash-bio-utils==0.0.6",
         "cryptography",
         "dash-cytoscape==0.2.0",
         "dash-extensions",

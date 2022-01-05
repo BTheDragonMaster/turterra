@@ -6,6 +6,7 @@ from dash_extensions.enrich import Trigger, ServersideOutput, Output, Input, Sta
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 import zlib
+import io
 from dash_extensions.snippets import send_file
 from turterra.app_layout import BUTTON_STYLE
 from turterra.turterra import TurterraData
@@ -70,8 +71,8 @@ def register_callbacks(app):
                 "nodes": turterra_data.tree.nodes,
                 "edges": turterra_data.tree.edges,
             }
-            return turterra_data, tree_elements
-        return None, []
+            return [turterra_data, tree_elements]
+        return [None, []]
 
     # Filter accessions
     @app.callback(
@@ -887,6 +888,39 @@ def register_callbacks(app):
             return [html.P("Uploaded structures:"), html.Br()] + [html.Li(file_name)
                 for file_name in os.listdir("uploaded_data/structures")]
         return None
+
+    @app.callback(
+        [
+            ServersideOutput("input-turterra-data", "data"),
+            Output("phylogeny-tree-viewer", "elements"),
+        ],
+        [
+            Input("load-zip", "filename"),
+            Input("load-zip", "contents"),
+        ],
+    )
+    def upload_zipped_data(file_name, zip_contents):
+        if file_name and zip_contents:
+            if file_name.endswith('.zip'):
+                content_type, content_string = zip_contents.split(',')
+                decoded = base64.b64decode(content_string)
+                zip_str = io.BytesIO(decoded)
+                folder = '.'.join(file_name.split('.')[:-1])
+
+                with ZipFile(zip_str) as z:
+                    z.extractall("data")
+
+                directory = os.path.join("data", folder)
+                turterra_data = TurterraData.from_folder(directory)
+
+                if turterra_data:
+                    tree_elements = {
+                        "nodes": turterra_data.tree.nodes,
+                        "edges": turterra_data.tree.edges,
+                    }
+                    return [turterra_data, tree_elements]
+
+        return [None, []]
 
 
 def get_sequence_viewer_information(accession: str, turterra_data: TurterraData):
