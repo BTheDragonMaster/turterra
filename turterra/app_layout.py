@@ -1,7 +1,7 @@
-import dash_core_components as dcc
+from dash import dcc
 import dash_daq as daq
 import dash_cytoscape
-import dash_html_components as html
+from dash import html
 from dash_extensions import Download
 
 from turterra.utils import tree_utility

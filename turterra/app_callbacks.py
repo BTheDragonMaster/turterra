@@ -1,7 +1,7 @@
 import dash
 import dash_bio
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash_extensions.enrich import Trigger, ServersideOutput, Output, Input, State
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -63,9 +63,9 @@ def register_callbacks(app):
         ctx = dash.callback_context
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if trigger_id == "input-load-button":
-            turterra_data = TurterraData.from_folder("test_data")
+            turterra_data = TurterraData.from_folder("data/sts_data")
         if trigger_id == "upload-add-to-analysis-button":
-            turterra_data.add_data_points("uploaded_data", "test_data")
+            turterra_data.add_data_points("uploaded_data", "data/sts_data")
         if turterra_data:
             tree_elements = {
                 "nodes": turterra_data.tree.nodes,
@@ -868,59 +868,59 @@ def register_callbacks(app):
         return None, dict(display="none")
 
     # Function to upload new sequences
-    @app.callback(
-        Output("upload-structures-list", "children"),
-        [
-            Input("upload-structures-upload", "filename"),
-            Input("upload-structures-upload", "contents"),
-        ],
-    )
-    def upload_structures(file_names, contents):
-        if file_names is not None and contents is not None:
-            for file_name, content in zip(file_names, contents):
-                content_type, content_string = content.split(",")
-                decoded = base64.b64decode(content_string)
-                with open(
-                    os.path.join("uploaded_data/structures", file_name), "wb"
-                ) as pdb:
-                    pdb.write(decoded)
-
-            return [html.P("Uploaded structures:"), html.Br()] + [html.Li(file_name)
-                for file_name in os.listdir("uploaded_data/structures")]
-        return None
-
-    @app.callback(
-        [
-            ServersideOutput("input-turterra-data", "data"),
-            Output("phylogeny-tree-viewer", "elements"),
-        ],
-        [
-            Input("load-zip", "filename"),
-            Input("load-zip", "contents"),
-        ],
-    )
-    def upload_zipped_data(file_name, zip_contents):
-        if file_name and zip_contents:
-            if file_name.endswith('.zip'):
-                content_type, content_string = zip_contents.split(',')
-                decoded = base64.b64decode(content_string)
-                zip_str = io.BytesIO(decoded)
-                folder = '.'.join(file_name.split('.')[:-1])
-
-                with ZipFile(zip_str) as z:
-                    z.extractall("data")
-
-                directory = os.path.join("data", folder)
-                turterra_data = TurterraData.from_folder(directory)
-
-                if turterra_data:
-                    tree_elements = {
-                        "nodes": turterra_data.tree.nodes,
-                        "edges": turterra_data.tree.edges,
-                    }
-                    return [turterra_data, tree_elements]
-
-        return [None, []]
+    # @app.callback(
+    #     Output("upload-structures-list", "children"),
+    #     [
+    #         Input("upload-structures-upload", "filename"),
+    #         Input("upload-structures-upload", "contents"),
+    #     ],
+    # )
+    # def upload_structures(file_names, contents):
+    #     if file_names is not None and contents is not None:
+    #         for file_name, content in zip(file_names, contents):
+    #             content_type, content_string = content.split(",")
+    #             decoded = base64.b64decode(content_string)
+    #             with open(
+    #                 os.path.join("uploaded_data/structures", file_name), "wb"
+    #             ) as pdb:
+    #                 pdb.write(decoded)
+    #
+    #         return [html.P("Uploaded structures:"), html.Br()] + [html.Li(file_name)
+    #             for file_name in os.listdir("uploaded_data/structures")]
+    #     return None
+    #
+    # @app.callback(
+    #     [
+    #         ServersideOutput("input-turterra-data", "data"),
+    #         Output("phylogeny-tree-viewer", "elements"),
+    #     ],
+    #     [
+    #         Input("load-zip", "filename"),
+    #         Input("load-zip", "contents"),
+    #     ],
+    # )
+    # def upload_zipped_data(file_name, zip_contents):
+    #     if file_name and zip_contents:
+    #         if file_name.endswith('.zip'):
+    #             content_type, content_string = zip_contents.split(',')
+    #             decoded = base64.b64decode(content_string)
+    #             zip_str = io.BytesIO(decoded)
+    #             folder = '.'.join(file_name.split('.')[:-1])
+    #
+    #             with ZipFile(zip_str) as z:
+    #                 z.extractall("data")
+    #
+    #             directory = os.path.join("data", folder)
+    #             turterra_data = TurterraData.from_folder(directory)
+    #
+    #             if turterra_data:
+    #                 tree_elements = {
+    #                     "nodes": turterra_data.tree.nodes,
+    #                     "edges": turterra_data.tree.edges,
+    #                 }
+    #                 return [turterra_data, tree_elements]
+    #
+    #     return [None, []]
 
 
 def get_sequence_viewer_information(accession: str, turterra_data: TurterraData):
